@@ -10,14 +10,12 @@ export default function CheckoutCartReview({
   itemCount,
   totalAmount,
   onBack,
-  onNext,
 }: {
   loading: boolean;
   items: CartItemView[];
   itemCount: number;
   totalAmount: number;
   onBack: () => void;
-  onNext: () => void;
 }) {
   return (
     <Box sx={{ border: "1px solid #eee", borderRadius: 2, p: 2 }}>
@@ -64,9 +62,6 @@ export default function CheckoutCartReview({
         <Stack direction="row" spacing={1}>
           <Button variant="outlined" onClick={onBack}>
             Quay lại giỏ hàng
-          </Button>
-          <Button variant="contained" onClick={onNext} disabled={!items.length}>
-            Tiếp tục
           </Button>
         </Stack>
       </Stack>

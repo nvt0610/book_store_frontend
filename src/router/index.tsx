@@ -16,7 +16,10 @@ import AuthorDetailPage from "@/pages/client/author/AuthorDetailPage";
 import PublisherDetailPage from "@/pages/client/publisher/PublisherDetailPage";
 import CartPage from "@/pages/client/cart/CartPage";
 import CheckoutPage from "@/pages/client/checkout/CheckoutPage";
+import CheckoutResultPage from "@/pages/client/checkout/CheckoutResultPage";
 import AccountPage from "@/pages/client/account/AccountPage";
+import UserOrderListPage from "@/pages/client/account/sections/OrdersSection/OrderListPage";
+import UserOrderDetailPage from "@/pages/client/account/sections/OrdersSection/OrderDetailPage";
 
 // ===== ADMIN PAGES =====
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
@@ -41,32 +44,48 @@ import CartListPage from "@/pages/admin/carts/CartListPage";
 
 export const router = createBrowserRouter([
   {
-    element: <AppBootstrap />, // 👈 THÊM DUY NHẤT DÒNG NÀY
+    element: <AppBootstrap />,
     children: [
-      /* ============================
-            CLIENT LAYOUT
-         ============================ */
       {
         path: "/",
         element: <MainLayout />,
         children: [
           { index: true, element: <HomePage /> },
+          { path: "cart", element: <CartPage /> },
           { path: "search", element: <SearchPage /> },
-          { path: "test", element: <TestPage /> },
           { path: "product/:id", element: <ProductDetailPage /> },
           { path: "author/:id", element: <AuthorDetailPage /> },
           { path: "publisher/:id", element: <PublisherDetailPage /> },
-          { path: "cart", element: <CartPage /> },
-          { path: "/checkout", element: <CheckoutPage /> },
-          { path: "account", element: <AccountPage /> },
-          { path: "account", element: <AccountPage /> },
-          { path: "*", element: <div>404 Not Found</div> },
+
+          // ======================
+          // ACCOUNT (USER)
+          // ======================
+          {
+            path: "account",
+            element: <AccountPage />, // ✅ BẮT BUỘC
+            children: [
+              {
+                path: "orders",
+                element: <UserOrderListPage />,
+              },
+              {
+                path: "orders/:id",
+                element: <UserOrderDetailPage />,
+              },
+            ],
+          },
         ],
       },
 
-      /* ============================
-            AUTH (NO LAYOUT)
-         ============================ */
+      // ======================
+      // CHECKOUT
+      // ======================
+      { path: "/checkout", element: <CheckoutPage /> },
+      { path: "/checkout/result", element: <CheckoutResultPage /> },
+
+      // ======================
+      // AUTH
+      // ======================
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPage /> },
 

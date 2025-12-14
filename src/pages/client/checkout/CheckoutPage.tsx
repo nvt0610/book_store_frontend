@@ -8,7 +8,6 @@ import CheckoutCartReview from "./components/CheckoutCartReview";
 import CheckoutAddress from "./components/CheckoutAddress";
 import CheckoutPayment from "./components/CheckoutPayment";
 import CheckoutSummary from "./components/CheckoutSummary";
-import CheckoutResult from "./components/CheckoutResult";
 
 import checkoutService from "./checkout.service";
 import type {
@@ -20,11 +19,13 @@ import { useAuthStore } from "@/store/authStore";
 import { useCartStore } from "@/store/cartStore";
 import { alertError, alertSuccess } from "@/utils/alert";
 
-type StepKey = "REVIEW" | "ADDRESS" | "PAYMENT" | "DONE";
+type StepKey = "REVIEW" | "ADDRESS" | "PAYMENT";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  console.log("CheckoutPage mounted", location.pathname);
 
   const user = useAuthStore((s) => s.user);
   const cart = useCartStore((s) => s.cart);
@@ -40,19 +41,22 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] =
     useState<CheckoutPaymentMethod>("COD");
   const [submitting, setSubmitting] = useState(false);
-  const [resultOrderId, setResultOrderId] = useState("");
-  const [activeStep, setActiveStep] = useState<StepKey>("REVIEW");
+  const [activeStep] = useState<StepKey>("REVIEW");
 
   // refs cho scroll
   const reviewRef = useRef<HTMLDivElement>(null);
   const addressRef = useRef<HTMLDivElement>(null);
   const paymentRef = useRef<HTMLDivElement>(null);
-  const doneRef = useRef<HTMLDivElement>(null);
+
+  const isResult = location.pathname.startsWith("/checkout/result");
 
   // =========================
   // INIT
   // =========================
   useEffect(() => {
+    // ❌ Không chạy INIT ở trang result
+    if (isResult) return;
+
     if (!init?.cart_id || !init?.item_ids?.length) {
       alertError("Dữ liệu thanh toán không hợp lệ");
       navigate("/cart");
@@ -62,7 +66,7 @@ export default function CheckoutPage() {
     setCartId(init.cart_id);
     setItemIds(init.item_ids);
     loadCart();
-  }, []);
+  }, [isResult]);
 
   useEffect(() => {
     if (!cartId) return;
@@ -117,11 +121,9 @@ export default function CheckoutPage() {
       // ======================
       // COD FLOW
       // ======================
+
       if (paymentMethod === "COD") {
-        setResultOrderId(order.id);
-        setActiveStep("DONE");
-        doneRef.current?.scrollIntoView({ behavior: "smooth" });
-        alertSuccess("Đặt hàng thành công");
+        navigate(`/checkout/result?success=1&code=COD&order_id=${order.id}`);
         return;
       }
 
@@ -165,14 +167,12 @@ export default function CheckoutPage() {
         {/* LEFT */}
         <CheckoutSteps
           active={activeStep}
-          showDone={!!resultOrderId}
           onGo={(s) => {
             setActiveStep(s);
             const map = {
               REVIEW: reviewRef,
               ADDRESS: addressRef,
               PAYMENT: paymentRef,
-              DONE: doneRef,
             };
             map[s]?.current?.scrollIntoView({ behavior: "smooth" });
           }}
@@ -211,16 +211,6 @@ export default function CheckoutPage() {
               onSubmit={handleSubmit}
             />
           </Box>
-
-          {resultOrderId && (
-            <Box ref={doneRef}>
-              <CheckoutResult
-                orderId={resultOrderId}
-                onGoHome={() => navigate("/")}
-                onGoCart={() => navigate("/cart")}
-              />
-            </Box>
-          )}
         </Box>
       </Box>
     </Box>

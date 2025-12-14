@@ -1,13 +1,12 @@
 // src/pages/client/checkout/components/CheckoutSteps.tsx
 import { Box, Typography } from "@mui/material";
 
-type StepKey = "REVIEW" | "ADDRESS" | "PAYMENT" | "DONE";
+type StepKey = "REVIEW" | "ADDRESS" | "PAYMENT";
 
 const STEPS: { key: StepKey; label: string }[] = [
   { key: "REVIEW", label: "Sản phẩm" },
   { key: "ADDRESS", label: "Địa chỉ" },
   { key: "PAYMENT", label: "Thanh toán" },
-  { key: "DONE", label: "Hoàn tất" },
 ];
 
 export default function CheckoutSteps({

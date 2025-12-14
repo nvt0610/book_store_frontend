@@ -36,6 +36,7 @@ export default function CheckoutPayment({
             value="MOMO"
             control={<Radio />}
             label="MOMO (sắp làm)"
+            disabled
           />
           <FormControlLabel
             value="VNPAY"

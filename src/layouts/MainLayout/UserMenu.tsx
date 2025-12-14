@@ -54,7 +54,7 @@ export default function UserMenu({ user }) {
               zIndex: 20,
             }}
           >
-            <MenuItem text="Trang cá nhân" action={() => navigate("/profile")} />
+            <MenuItem text="Trang cá nhân" action={() => navigate("/account")} />
             <MenuItem text="Đơn mua" action={() => navigate("/orders")} />
 
             {user.role === "ADMIN" && (

@@ -94,8 +94,10 @@ export interface BuyNowPayload {
   payment_method?: PaymentMethod;
 }
 
+export type UpdatableOrderStatus = "PENDING" | "INACTIVE";
+
 export interface UpdateOrderPayload {
-  status?: OrderStatus;
+  status?: UpdatableOrderStatus;
   address_id?: string;
 }
 

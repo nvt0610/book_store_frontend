@@ -20,6 +20,11 @@ export interface User {
   deleted_at?: string | null;
 }
 
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+}
+
 export interface UserListMeta {
   total: number;
   page: number;
@@ -74,9 +79,19 @@ const base = createCrudApi("users");
 export const userApi = {
   ...base,
 
-  // custom business logic
+  // admin / system
   async updateStatus(id: string, status: "ACTIVE" | "INACTIVE"): Promise<User> {
     const res = await axiosClient.patch(`/users/${id}/status`, { status });
+    return res.data;
+  },
+
+  // ==============================
+  // USER SELF ACTIONS
+  // ==============================
+  async changeMyPassword(
+    payload: ChangePasswordPayload
+  ): Promise<{ success: boolean }> {
+    const res = await axiosClient.post("/users/me/change-password", payload);
     return res.data;
   },
 };

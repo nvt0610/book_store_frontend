@@ -13,7 +13,7 @@ export default function CheckoutResult({
   return (
     <Box sx={{ border: "1px solid #eee", borderRadius: 2, p: 3 }}>
       <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>
-        Đặt hàng thành công 🎉
+        Đặt hàng thành công
       </Typography>
 
       {!!orderId && (

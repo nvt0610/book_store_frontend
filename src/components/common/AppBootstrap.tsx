@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import { categoryApi } from "@/api/categories";
 import { authorApi } from "@/api/authors";
@@ -10,6 +10,8 @@ import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
 
 export default function AppBootstrap() {
+  const location = useLocation();
+
   const {
     loading,
     isExpired,
@@ -23,6 +25,9 @@ export default function AppBootstrap() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const loadCart = useCartStore((s) => s.loadCart);
 
+  // =========================
+  // PRELOAD LOOKUP DATA
+  // =========================
   useEffect(() => {
     if (loading) return;
     if (!isExpired()) return;
@@ -55,12 +60,19 @@ export default function AppBootstrap() {
     };
   }, []);
 
+  // =========================
+  // LOAD CART (FIX HERE)
+  // =========================
   useEffect(() => {
-    // ✅ chỉ load cart khi auth đã rõ ràng
+    // ❌ KHÔNG load cart khi đang ở trang kết quả thanh toán
+    if (location.pathname.startsWith("/checkout/result")) {
+      return;
+    }
+
     if (user && accessToken) {
       loadCart();
     }
-  }, [user, accessToken]);
+  }, [user, accessToken, location.pathname]);
 
   return <Outlet />;
 }
