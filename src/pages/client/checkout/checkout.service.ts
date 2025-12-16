@@ -4,6 +4,7 @@ import orderApi from "@/api/orders";
 import type {
   CheckoutSubmitPayload,
   CheckoutPaymentMethod,
+  BuyNowSubmitPayload,
 } from "./checkout.types";
 
 const checkoutService = {
@@ -19,6 +20,16 @@ const checkoutService = {
     // ✅ CHỈ TRẢ ORDER
     return order;
   },
+
+  async buyNow(payload: BuyNowSubmitPayload) {
+    return orderApi.buyNow({
+      address_id: payload.address_id,
+      product_id: payload.product_id,
+      quantity: payload.quantity,
+      payment_method: payload.payment_method,
+    });
+  },
+
   async buyAgainFromOrder(payload: {
     source_order_id: string;
     address_id: string;

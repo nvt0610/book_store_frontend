@@ -158,10 +158,10 @@ const orderApi = {
   },
 
   /**
-   * POST /orders/:id/cancel
+   * PATCH /orders/:id/cancel
    */
   async cancelOrder(id: string, reason?: string): Promise<Order> {
-    const res = await axiosClient.post(`/orders/${id}/cancel`, { reason });
+    const res = await axiosClient.patch(`/orders/${id}/cancel`, { reason });
     return res.data.data;
   },
 

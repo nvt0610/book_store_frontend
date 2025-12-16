@@ -35,6 +35,7 @@ interface CrudTableProps<T> {
 
   onChangePage: (event: unknown, newPage: number) => void;
   onEdit: (id: string) => void;
+  canEditRow?: (row: T) => boolean;
   onDelete?: (id: string) => void;
   onRestore?: (id: string) => void;
 
@@ -50,6 +51,7 @@ export default function CrudTable<T>({
   total,
   onChangePage,
   onEdit,
+  canEditRow,
   onDelete,
   onRestore,
   showDeleted,
@@ -155,7 +157,7 @@ export default function CrudTable<T>({
                     {/* ⭐ ACTIVE MODE (edit + delete) */}
                     {!isDeleted && (
                       <>
-                        {onEdit && (
+                        {onEdit && (!canEditRow || canEditRow(row)) && (
                           <Tooltip title="Sửa">
                             <IconButton
                               size="small"

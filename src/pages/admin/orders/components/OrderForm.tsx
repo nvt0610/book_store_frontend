@@ -50,7 +50,7 @@ export default function OrderForm({ initialData }) {
     []
   );
 
-  const { list: addressList } = useFetchList(
+  const { list: addressList, loading: addressLoading } = useFetchList(
     () =>
       form.user_id
         ? addressApi
@@ -209,6 +209,8 @@ export default function OrderForm({ initialData }) {
           <AddressSelectPanel
             userId={form.user_id}
             value={form.address_id}
+            options={addressList}
+            loading={addressLoading}
             onChange={(id) => setForm((p) => ({ ...p, address_id: id }))}
           />
         ) : (

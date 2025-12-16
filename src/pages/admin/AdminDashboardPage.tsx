@@ -109,7 +109,7 @@ export default function AdminDashboardPage() {
       <Card sx={{ borderRadius: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
         <CardContent>
           <Typography variant="h6" fontWeight={700} mb={2}>
-            Latest Orders (PENDING)
+            Hóa đơn mới nhất
           </Typography>
           <Divider sx={{ mb: 2 }} />
 

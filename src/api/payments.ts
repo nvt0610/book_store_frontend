@@ -31,9 +31,21 @@ export const paymentApi = {
   },
 
   /** GET /payments/:id */
-  async getById(id: string): Promise<Payment | null> {
+  async getById(id: string): Promise<any> {
     const res = await axiosClient.get(`/payments/${id}`);
-    return res.data.data ?? null;
+    return res; // Return full response for unwrapItem
+  },
+
+  /** PATCH /payments/:id/complete */
+  async markCompleted(id: string): Promise<Payment> {
+    const res = await axiosClient.patch(`/payments/${id}/complete`);
+    return res.data.data;
+  },
+
+  /** PUT /payments/:id (Admin update general info) */
+  async update(id: string, data: Partial<Payment>): Promise<Payment> {
+    const res = await axiosClient.put(`/payments/${id}`, data);
+    return res.data.data;
   },
 
   /** GET /payments/order/:order_id */

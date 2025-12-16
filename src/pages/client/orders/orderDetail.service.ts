@@ -25,6 +25,7 @@ async function getById(id: string): Promise<OrderDetail> {
     total_amount: Number(raw.total_amount),
     placed_at: raw.placed_at,
     paid_at: raw.paid_at,
+    cancel_reason: raw.cancel_reason,
     payment: raw.payment ?? null,
     items,
   };

@@ -24,6 +24,7 @@ export interface OrderDetail {
   total_amount: number | string;
   placed_at?: string | null;
   paid_at?: string | null;
+  cancel_reason?: string | null;
 
   items: OrderDetailItem[];
   payment?: Payment | null;

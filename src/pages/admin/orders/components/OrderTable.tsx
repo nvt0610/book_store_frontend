@@ -35,6 +35,7 @@ export default function OrderTable({
       pageSize={pageSize}
       onChangePage={onChangePage}
       onEdit={onEdit}
+      canEditRow={(row) => row.status === "PENDING"}
       showDeleted={showDeleted}
       onDelete={async (id) => {
         await onDelete(id);

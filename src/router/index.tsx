@@ -3,6 +3,7 @@ import AppBootstrap from "@/components/common/AppBootstrap";
 
 import MainLayout from "@/layouts/MainLayout/MainLayout";
 import AdminLayout from "@/layouts/AdminLayout/AdminLayout";
+import AdminGuard from "./AdminGuard";
 
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -87,45 +88,50 @@ export const router = createBrowserRouter([
          ============================ */
       {
         path: "/admin",
-        element: <AdminLayout />,
+        element: <AdminGuard />,
         children: [
-          { index: true, element: <AdminDashboardPage /> },
+          {
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <AdminDashboardPage /> },
 
-          { path: "users", element: <UserListPage /> },
-          { path: "users/new", element: <UserFormPage /> },
-          { path: "users/:id", element: <UserFormPage /> },
+              { path: "users", element: <UserListPage /> },
+              { path: "users/new", element: <UserFormPage /> },
+              { path: "users/:id", element: <UserFormPage /> },
 
-          { path: "categories", element: <CategoryListPage /> },
-          { path: "categories/new", element: <CategoryFormPage /> },
-          { path: "categories/:id", element: <CategoryFormPage /> },
+              { path: "categories", element: <CategoryListPage /> },
+              { path: "categories/new", element: <CategoryFormPage /> },
+              { path: "categories/:id", element: <CategoryFormPage /> },
 
-          { path: "products", element: <ProductListPage /> },
-          { path: "products/new", element: <ProductFormPage /> },
-          { path: "products/:id", element: <ProductFormPage /> },
+              { path: "products", element: <ProductListPage /> },
+              { path: "products/new", element: <ProductFormPage /> },
+              { path: "products/:id", element: <ProductFormPage /> },
 
-          { path: "authors", element: <AuthorListPage /> },
-          { path: "authors/new", element: <AuthorFormPage /> },
-          { path: "authors/:id", element: <AuthorFormPage /> },
+              { path: "authors", element: <AuthorListPage /> },
+              { path: "authors/new", element: <AuthorFormPage /> },
+              { path: "authors/:id", element: <AuthorFormPage /> },
 
-          { path: "publishers", element: <PublisherListPage /> },
-          { path: "publishers/new", element: <PublisherFormPage /> },
-          { path: "publishers/:id", element: <PublisherFormPage /> },
+              { path: "publishers", element: <PublisherListPage /> },
+              { path: "publishers/new", element: <PublisherFormPage /> },
+              { path: "publishers/:id", element: <PublisherFormPage /> },
 
-          { path: "orders", element: <OrderListPage /> },
-          { path: "orders/new", element: <OrderFormPage /> },
-          { path: "orders/:id", element: <OrderFormPage /> },
+              { path: "orders", element: <OrderListPage /> },
+              { path: "orders/new", element: <OrderFormPage /> },
+              { path: "orders/:id", element: <OrderFormPage /> },
 
-          { path: "addresses", element: <AddressListPage /> },
-          { path: "addresses/new", element: <AddressFormPage /> },
-          { path: "addresses/:id", element: <AddressFormPage /> },
+              { path: "addresses", element: <AddressListPage /> },
+              { path: "addresses/new", element: <AddressFormPage /> },
+              { path: "addresses/:id", element: <AddressFormPage /> },
 
-          { path: "payments", element: <PaymentListPage /> },
-          { path: "payments/new", element: <PaymentFormPage /> },
-          { path: "payments/:id", element: <PaymentFormPage /> },
+              { path: "payments", element: <PaymentListPage /> },
+              { path: "payments/new", element: <PaymentFormPage /> },
+              { path: "payments/:id", element: <PaymentFormPage /> },
 
-          { path: "carts", element: <CartListPage /> },
-          { path: "carts/new", element: <CartFormPage /> },
-          { path: "carts/:id", element: <CartFormPage /> },
+              { path: "carts", element: <CartListPage /> },
+              { path: "carts/new", element: <CartFormPage /> },
+              { path: "carts/:id", element: <CartFormPage /> },
+            ],
+          },
         ],
       },
     ],

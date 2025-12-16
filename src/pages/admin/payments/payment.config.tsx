@@ -21,6 +21,19 @@ export const paymentConfig = {
   // =============================
   // EDIT
   // =============================
+  rowActions(row) {
+    if (row.status !== "PENDING") {
+      return []; // ❌ không có action nào
+    }
+
+    return [
+      {
+        key: "edit",
+        label: "Sửa",
+      },
+    ];
+  },
+
   onEdit: (id) => (window.location.href = `/admin/payments/${id}`),
 
   // =============================

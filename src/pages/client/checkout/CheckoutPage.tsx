@@ -15,6 +15,7 @@ import { unwrapList } from "@/utils/unwrap";
 import type {
   CheckoutInitState,
   CheckoutPaymentMethod,
+  BuyNowItem,
 } from "./checkout.types";
 import vnpayApi from "@/api/vnpay";
 import { useAuthStore } from "@/store/authStore";
@@ -36,7 +37,7 @@ export default function CheckoutPage() {
 
   const init = location.state as CheckoutInitState | null;
 
-  const [mode, setMode] = useState<"CART" | "ORDER">("CART");
+  const [mode, setMode] = useState<"CART" | "ORDER" | "BUY_NOW">("CART");
 
   // CART mode
   const [cartId, setCartId] = useState("");
@@ -45,6 +46,9 @@ export default function CheckoutPage() {
   // ORDER mode
   const [orderItems, setOrderItems] = useState<any[]>([]);
   const [orderId, setOrderId] = useState("");
+
+  // BUY_NOW mode
+  const [buyNowItem, setBuyNowItem] = useState<BuyNowItem | null>(null);
 
   const [addressId, setAddressId] = useState("");
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -102,6 +106,14 @@ export default function CheckoutPage() {
           }))
         );
       });
+      return;
+    }
+
+    // ===== BUY NOW MODE =====
+    if ("buyNowItem" in init) {
+      setMode("BUY_NOW");
+      setBuyNowItem(init.buyNowItem);
+      return;
     }
   }, [isResult]);
 
@@ -166,8 +178,19 @@ export default function CheckoutPage() {
     if (mode === "CART") {
       return itemsView.filter((it) => itemIds.includes(it.id));
     }
+    if (mode === "BUY_NOW" && buyNowItem) {
+      return [
+        {
+          id: "buy-now",
+          product: buyNowItem.product,
+          quantity: buyNowItem.quantity,
+          subtotal:
+            Number(buyNowItem.product?.price || 0) * buyNowItem.quantity,
+        },
+      ];
+    }
     return orderItems;
-  }, [mode, itemsView, itemIds, orderItems]);
+  }, [mode, itemsView, itemIds, orderItems, buyNowItem]);
 
   const totalAmount = useMemo(
     () =>
@@ -191,6 +214,11 @@ export default function CheckoutPage() {
     }
 
     if (mode === "CART" && !addressId) {
+      alertError("Vui lòng chọn địa chỉ giao hàng");
+      return;
+    }
+
+    if (mode === "BUY_NOW" && !addressId) {
       alertError("Vui lòng chọn địa chỉ giao hàng");
       return;
     }
@@ -224,14 +252,25 @@ export default function CheckoutPage() {
       }
 
       // =========================
-      // CART: CREATE NEW ORDER
+      // CREATE NEW ORDER (CART OR BUY_NOW)
       // =========================
-      const order = await checkoutService.checkoutFromCart({
-        cart_id: cartId,
-        address_id: addressId,
-        item_ids: itemIds,
-        payment_method: paymentMethod,
-      });
+      let order = null;
+
+      if (mode === "CART") {
+        order = await checkoutService.checkoutFromCart({
+          cart_id: cartId,
+          address_id: addressId,
+          item_ids: itemIds,
+          payment_method: paymentMethod,
+        });
+      } else if (mode === "BUY_NOW" && buyNowItem) {
+        order = await checkoutService.buyNow({
+          product_id: buyNowItem.product.id,
+          quantity: buyNowItem.quantity,
+          address_id: addressId,
+          payment_method: paymentMethod,
+        });
+      }
 
       if (!order) {
         throw new Error("Không tạo được đơn hàng");
@@ -289,11 +328,11 @@ export default function CheckoutPage() {
         <Box>
           <Box ref={reviewRef} mb={4}>
             <CheckoutCartReview
-              loading={loadingCart}
+              loading={mode === "CART" ? loadingCart : false}
               items={selectedItems}
               itemCount={selectedItems.length}
               totalAmount={totalAmount}
-              onBack={() => navigate("/cart")}
+              onBack={() => navigate(mode === "CART" ? "/cart" : -1)}
             />
           </Box>
 

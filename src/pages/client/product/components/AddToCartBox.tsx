@@ -50,7 +50,7 @@ export default function AddToCartBox({ product }: { product: any }) {
   };
 
   /** ===== BUY NOW ===== */
-  const handleBuyNow = async () => {
+  const handleBuyNow = () => {
     if (!product?.id) return;
 
     if (!user) {
@@ -58,25 +58,15 @@ export default function AddToCartBox({ product }: { product: any }) {
       return;
     }
 
-    try {
-      setLoading(true);
-
-      // NOTE:
-      // address_id tạm truyền AUTO_DEFAULT
-      // BE sẽ resolve address is_default
-      await orderApi.buyNow({
-        product_id: product.id,
-        quantity: qty,
-        address_id: "AUTO_DEFAULT",
-      });
-
-      alertSuccess("Đặt hàng thành công");
-      navigate("/orders");
-    } catch (e: any) {
-      alertError(e?.message || "Không thể mua ngay");
-    } finally {
-      setLoading(false);
-    }
+    // Redirect sang trang Checkout, kèm item
+    navigate("/checkout", {
+      state: {
+        buyNowItem: {
+          product,
+          quantity: qty,
+        },
+      },
+    });
   };
 
   /** ===== RENDER ===== */

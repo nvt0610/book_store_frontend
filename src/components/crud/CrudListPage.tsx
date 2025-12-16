@@ -233,7 +233,9 @@ export default function CrudListPage({ config, api, TableComponent }) {
                 page={page - 1}
                 pageSize={pageSize}
                 onChangePage={handleChangePage}
-                onEdit={!config.disableEdit ? config.onEdit : null}
+                onEdit={
+                  !config.disableEdit ? (id) => config.onEdit?.(id, rows) : null
+                }
                 onDelete={
                   !config.disableDelete
                     ? (id) => smartDelete(config, api, id)

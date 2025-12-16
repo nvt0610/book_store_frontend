@@ -50,7 +50,15 @@ export default function CrudFormPage<T>({ config, api }: CrudFormPageProps<T>) {
         setLoading(true);
         const res = await api.getById(id);
         if (mounted) {
-          setData(unwrapItem(res));
+          // Smart unwrap: if res.data.data exists -> use it; else if res.data exists -> use it; else use res
+          // (Handle inconsistency between different APIs)
+          const item = (res as any)?.data?.data 
+            ? (res as any).data.data 
+            : (res as any)?.data 
+              ? (res as any).data 
+              : res;
+              
+          setData(item);
           window.scrollTo({ top: 0 });
         }
       } catch (err: any) {

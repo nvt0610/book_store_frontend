@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { alertError, alertSuccess } from "@/utils/alert";
 import { paymentApi } from "@/api/payments";
 import { validate } from "@/utils/validation";
+import { useParams } from "react-router-dom";
 
 import { useFormState } from "@/hooks/useFormState";
 import FormSection from "@/components/form/FormSection";
@@ -21,30 +22,45 @@ const formatCurrency = (value: any) => {
 
 export default function PaymentForm({ initialData }) {
   const navigate = useNavigate();
-  const isEdit = Boolean(initialData);
+  const { id } = useParams();
 
-  // Payment không có chế độ tạo → nếu vào create thì redirect
   useEffect(() => {
-    if (!isEdit) navigate("/admin/payments");
-  }, [isEdit, navigate]);
+    // ✅ chỉ redirect khi KHÔNG có id (create mode)
+    if (!id) {
+      navigate("/admin/payments", { replace: true });
+    }
+  }, [id]);
 
   const { form, setForm } = useFormState(initialData, {
     order_id: "",
     payment_method: "COD",
     amount: "",
     payment_ref: "",
+    status: "PENDING",
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        order_id: initialData.order_id ?? "",
+        payment_method: initialData.payment_method ?? "COD",
+        amount: initialData.amount ?? "",
+        payment_ref: initialData.payment_ref ?? "",
+        status: initialData.status ?? "PENDING",
+      });
+    }
+  }, [initialData]);
 
   const handleSubmit = async () => {
     try {
-      validate.uuid(form.order_id, "Order ID");
+      if (form.status !== "COMPLETED") {
+        alertError("Chỉ cho phép chuyển trạng thái sang COMPLETED");
+        return;
+      }
 
-      await paymentApi.update(initialData.id, {
-        payment_method: form.payment_method,
-        payment_ref: form.payment_ref,
-      });
+      await paymentApi.markCompleted(initialData.id);
 
-      alertSuccess("Cập nhật payment thành công");
+      alertSuccess("Thanh toán đã được xác nhận");
       navigate("/admin/payments");
     } catch (err: any) {
       alertError(err?.response?.data?.message || err.message);
@@ -56,7 +72,12 @@ export default function PaymentForm({ initialData }) {
       <FormSection title="Chi tiết thanh toán">
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <TextField disabled label="Order ID" fullWidth value={form.order_id} />
+            <TextField
+              disabled
+              label="Order ID"
+              fullWidth
+              value={form.order_id}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>
@@ -86,6 +107,23 @@ export default function PaymentForm({ initialData }) {
               fullWidth
               value={formatCurrency(form.amount)}
             />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              label="Trạng thái"
+              fullWidth
+              value={form.status}
+              disabled={form.status !== "PENDING"} // 🔒 completed thì khóa
+              onChange={(e) =>
+                setForm((p) => ({ ...p, status: e.target.value }))
+              }
+              SelectProps={{ native: true }}
+            >
+              <option value="PENDING">PENDING</option>
+              <option value="COMPLETED">COMPLETED</option>
+            </TextField>
           </Grid>
 
           <Grid item xs={12} md={6}>

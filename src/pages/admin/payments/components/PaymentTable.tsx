@@ -34,15 +34,9 @@ export default function PaymentTable({
       pageSize={pageSize}
       total={total}
       onChangePage={onChangePage}
-      onEdit={(id) => {
-        const row = rows.find((r) => r.id === id);
-        if (!row) return;
-
-        // ⭐ Block edit nếu không phải PENDING
-        if (row.status !== "PENDING") return;
-
-        onEdit?.(id);
-      }}
+      onEdit={onEdit}
+      // 🔥 FIX QUAN TRỌNG
+      canEditRow={(row) => row.status === "PENDING"}
       onDelete={async (id) => {
         await onDelete(id);
         refresh?.();
