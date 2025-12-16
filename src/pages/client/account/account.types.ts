@@ -2,7 +2,7 @@
 import type { User } from "@/api/users";
 import type { Address } from "@/api/addresses";
 
-export type AccountTabKey = "profile" | "address" | "security";
+export type AccountTabKey = "profile" | "address" | "security" | "orders";
 
 export interface ProfileFormData {
   full_name: string;

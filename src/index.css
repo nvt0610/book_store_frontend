@@ -66,3 +66,8 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Force SweetAlert2 to appear above all other content, including MUI Dialogs */
+.swal2-container {
+  z-index: 9999 !important;
+}

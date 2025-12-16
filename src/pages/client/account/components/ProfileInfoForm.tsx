@@ -1,15 +1,18 @@
-import { Button, TextField, Divider } from "@mui/material";
+import { Button, TextField, Divider, Stack, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { accountService } from "../account.service";
 import { alertSuccess, alertError } from "@/utils/alert";
 import FormSection from "@/components/form/FormSection";
-import FormSubmitBar from "@/components/form/FormSubmitBar";
 import { usePhoneField } from "@/hooks/usePhoneField";
 import PasswordChangeForm from "./PasswordChangeForm";
 
 export default function ProfileInfoForm() {
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   const [form, setForm] = useState<any>({ full_name: "", phone: "" });
+  const [originalForm, setOriginalForm] = useState<any>(null);
+
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const phone = usePhoneField();
@@ -17,9 +20,18 @@ export default function ProfileInfoForm() {
   useEffect(() => {
     accountService.getMe().then((u) => {
       setForm(u);
+      setOriginalForm(u);
       phone.setValue(u.phone || "");
     });
   }, []);
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (originalForm) {
+      setForm(originalForm);
+      phone.setValue(originalForm.phone || "");
+    }
+  };
 
   const submit = async () => {
     try {
@@ -29,6 +41,8 @@ export default function ProfileInfoForm() {
         phone: phone.value,
       });
       alertSuccess("Cập nhật thông tin thành công");
+      setIsEditing(false); // Turn off editing mode on success
+      setOriginalForm(form); // Update original form to new state
     } catch (e: any) {
       alertError(e.message || "Cập nhật thất bại");
     } finally {
@@ -47,6 +61,7 @@ export default function ProfileInfoForm() {
             setForm((p: any) => ({ ...p, full_name: e.target.value }))
           }
           sx={{ mb: 2 }}
+          disabled={!isEditing}
         />
 
         <TextField
@@ -64,7 +79,25 @@ export default function ProfileInfoForm() {
           error={!!phone.error}
           helperText={phone.error}
           onChange={(e) => phone.onChange(e.target.value)}
+          disabled={!isEditing}
         />
+
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          {!isEditing ? (
+            <Button variant="contained" onClick={() => setIsEditing(true)}>
+              Sửa
+            </Button>
+          ) : (
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" color="secondary" onClick={handleCancel}>
+                Hủy
+              </Button>
+              <Button variant="contained" onClick={submit} disabled={loading}>
+                {loading ? "Đang lưu..." : "Xác nhận"}
+              </Button>
+            </Stack>
+          )}
+        </Box>
 
         <Divider sx={{ my: 2 }} />
 
@@ -77,13 +110,6 @@ export default function ProfileInfoForm() {
 
         {showChangePassword && <PasswordChangeForm />}
       </FormSection>
-
-      <FormSubmitBar
-        backUrl="/"
-        loading={loading}
-        isEdit
-        onSubmit={submit}
-      />
     </>
   );
 }

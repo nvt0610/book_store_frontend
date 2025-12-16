@@ -1,27 +1,29 @@
-import { Stack } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Box, Stack } from "@mui/material";
 import CartItemRow from "@/components/cart/CartItemRow";
-import type { OrderDetailItem } from "../orderDetail.types";
 
-interface Props {
-  items: OrderDetailItem[];
-}
-
-export default function OrderItemsList({ items }: Props) {
-  const navigate = useNavigate();
-
+export default function OrderItemsList({ items }: { items: any[] }) {
   return (
-    <Stack spacing={1}>
-      {items.map((item) => (
-        <CartItemRow
-          key={item.id}
-          item={item}
-          readOnly
-          onClickProduct={() =>
-            navigate(`/product/${item.product.id}`)
-          }
-        />
-      ))}
-    </Stack>
+    <Box
+      sx={{
+        maxHeight: 320,        // ✅ KHÔNG giãn layout
+        overflowY: "auto",     // ✅ scroll nếu nhiều
+        borderTop: "1px solid #eee",
+        mt: 1,
+        pt: 1,
+      }}
+    >
+      <Stack spacing={1}>
+        {items.map((it) => (
+          <CartItemRow
+            key={it.id}
+            item={{
+              ...it,
+              subtotal: Number(it.price) * it.quantity,
+            }}
+            readOnly
+          />
+        ))}
+      </Stack>
+    </Box>
   );
 }

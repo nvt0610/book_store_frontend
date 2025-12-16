@@ -1,4 +1,4 @@
-import { orderApi } from "@/api/orders";
+import orderApi from "@/api/orders";
 import { unwrapList, unwrapMeta } from "@/utils/unwrap";
 
 export async function fetchMyOrders(params?: {

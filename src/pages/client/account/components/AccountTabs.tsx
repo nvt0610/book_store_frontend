@@ -14,6 +14,7 @@ export default function AccountTabs({
       <Tab value="profile" label="Thông tin cá nhân" />
       <Tab value="address" label="Địa chỉ" />
       <Tab value="security" label="Bảo mật" />
+      <Tab value="orders" label="Đơn hàng của tôi" />
     </Tabs>
   );
 }

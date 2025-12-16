@@ -41,6 +41,17 @@ export const paymentApi = {
     const res = await axiosClient.get(`/payments/order/${order_id}`);
     return res.data.data;
   },
+
+  // POST /order/:order_id/retry
+  async retryPayment(
+    order_id: string,
+    payment_method: PaymentMethod
+  ): Promise<Payment> {
+    const res = await axiosClient.post(`/payments/order/${order_id}/retry`, {
+      payment_method,
+    });
+    return res.data.data;
+  },
 };
 
 export default paymentApi;

@@ -1,7 +1,10 @@
 // src/pages/client/checkout/checkout.service.ts
 
-import { orderApi } from "@/api/orders";
-import type { CheckoutSubmitPayload } from "./checkout.types";
+import orderApi from "@/api/orders";
+import type {
+  CheckoutSubmitPayload,
+  CheckoutPaymentMethod,
+} from "./checkout.types";
 
 const checkoutService = {
   async checkoutFromCart(payload: CheckoutSubmitPayload) {
@@ -15,6 +18,13 @@ const checkoutService = {
 
     // ✅ CHỈ TRẢ ORDER
     return order;
+  },
+  async buyAgainFromOrder(payload: {
+    source_order_id: string;
+    address_id: string;
+    payment_method: CheckoutPaymentMethod;
+  }) {
+    return orderApi.buyAgain(payload);
   },
 };
 

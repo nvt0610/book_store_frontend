@@ -18,8 +18,9 @@ import CartPage from "@/pages/client/cart/CartPage";
 import CheckoutPage from "@/pages/client/checkout/CheckoutPage";
 import CheckoutResultPage from "@/pages/client/checkout/CheckoutResultPage";
 import AccountPage from "@/pages/client/account/AccountPage";
-import UserOrderListPage from "@/pages/client/account/sections/OrdersSection/OrderListPage";
-import UserOrderDetailPage from "@/pages/client/account/sections/OrdersSection/OrderDetailPage";
+import UserOrderListPage from "@/pages/client/orders/OrderListPage";
+import OrderDetailPage from "@/pages/client/orders/OrderDetailPage";
+
 
 // ===== ADMIN PAGES =====
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
@@ -60,20 +61,12 @@ export const router = createBrowserRouter([
           // ======================
           // ACCOUNT (USER)
           // ======================
-          {
-            path: "account",
-            element: <AccountPage />, // ✅ BẮT BUỘC
-            children: [
-              {
-                path: "orders",
-                element: <UserOrderListPage />,
-              },
-              {
-                path: "orders/:id",
-                element: <UserOrderDetailPage />,
-              },
-            ],
-          },
+          // ACCOUNT (NO ORDER INSIDE)
+          { path: "account", element: <AccountPage /> },
+
+          // ✅ ORDER DOMAIN – RIÊNG
+          { path: "orders", element: <UserOrderListPage /> },
+          { path: "orders/:id", element: <OrderDetailPage /> },
         ],
       },
 

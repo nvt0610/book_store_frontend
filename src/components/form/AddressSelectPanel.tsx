@@ -1,127 +1,86 @@
-import { Box, Typography, Radio, Button, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { addressApi } from "@/api/addresses";
-import { unwrapList } from "@/utils/unwrap";
-import { alertError } from "@/utils/alert";
+import {
+  Box,
+  Typography,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from "@mui/material";
 
 export default function AddressSelectPanel({
   userId,
   value,
+  options,
+  loading,
   onChange,
 }: {
   userId: string;
   value: string;
+  options: any[];
+  loading: boolean;
   onChange: (id: string) => void;
 }) {
-  const navigate = useNavigate();
-  const [list, setList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const safeOptions = Array.isArray(options) ? options : [];
 
-  useEffect(() => {
-    if (!userId) return;
-
-    const load = async () => {
-      try {
-        setLoading(true);
-        const res = await addressApi.list({ user_id: userId, pageSize: 500 });
-        setList(unwrapList(res));
-      } catch {
-        alertError("Không tải được địa chỉ");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [userId]);
-
-  // =========================
-  // EMPTY STATE
-  // =========================
-  if (!loading && list.length === 0) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Typography fontWeight={600} mb={1}>
-          Chưa có địa chỉ giao hàng
-        </Typography>
-
-        <Typography fontSize={13} color="text.secondary" mb={2}>
-          Vui lòng tạo địa chỉ mới để tiếp tục thanh toán
-        </Typography>
-
-        <Button
-          variant="contained"
-          onClick={() => navigate("/me/addresses")}
-        >
-          Thêm địa chỉ mới
-        </Button>
-      </Box>
-    );
+  if (loading) {
+    return <Typography>Đang tải địa chỉ...</Typography>;
   }
 
-  // =========================
-  // LIST
-  // =========================
+  if (!safeOptions.length) {
+    return <Typography>Chưa có địa chỉ</Typography>;
+  }
+
   return (
-    <Box sx={{ p: 2 }}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={1}
+    <Box
+      sx={{
+        maxHeight: 280,          // 👈 GIỚI HẠN CHIỀU CAO
+        overflowY: "auto",       // 👈 SCROLL
+        border: "1px solid #eee",
+        borderRadius: 1,
+      }}
+    >
+      <RadioGroup
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
       >
-        <Typography fontWeight={600}>Chọn địa chỉ</Typography>
-
-        <Button
-          size="small"
-          onClick={() => navigate("/me/addresses")}
-        >
-          + Thêm địa chỉ
-        </Button>
-      </Stack>
-
-      <Box
-        sx={{
-          maxHeight: 280,
-          overflowY: "auto",
-          border: "1px solid #eee",
-          borderRadius: 1,
-        }}
-      >
-        {list.map((a) => (
+        {safeOptions.map((a) => (
           <Box
             key={a.id}
             sx={{
               px: 2,
               py: 1.5,
               borderBottom: "1px solid #eee",
-              display: "flex",
-              gap: 2,
-              cursor: "pointer",
               bgcolor: value === a.id ? "#f5f8ff" : "transparent",
-              "&:hover": { bgcolor: "#f9fafb" },
+              cursor: "pointer",
+              "&:hover": {
+                bgcolor: "#f9fafb",
+              },
             }}
-            onClick={() => onChange(a.id)}
           >
-            <Radio checked={value === a.id} />
+            <FormControlLabel
+              value={a.id}
+              control={<Radio />}
+              sx={{ alignItems: "flex-start", m: 0 }}
+              label={
+                <Box>
+                  <Typography fontWeight={600}>
+                    {a.full_name}
+                  </Typography>
 
-            <Box>
-              <Typography fontWeight={600}>{a.full_name}</Typography>
-              <Typography fontSize={13}>
-                {a.address_line} – {a.phone}
-              </Typography>
+                  <Typography fontSize={13}>
+                    {a.address_line} – {a.phone}
+                  </Typography>
 
-              {a.is_default && (
-                <Typography fontSize={12} color="success.main">
-                  Mặc định
-                </Typography>
-              )}
-            </Box>
+                  {a.is_default && (
+                    <Typography fontSize={12} color="success.main">
+                      Mặc định
+                    </Typography>
+                  )}
+                </Box>
+              }
+            />
           </Box>
         ))}
-      </Box>
+      </RadioGroup>
     </Box>
   );
 }

@@ -2,8 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import AccountLayout from "./AccountLayout";
 import AccountPage from "./AccountPage";
 
-import OrderListPage from "./sections/OrdersSection/OrderListPage";
-import OrderDetailPage from "./sections/OrdersSection/OrderDetailPage";
+import OrderListPage from "../orders/OrderListPage";
+import OrderDetailPage from "../orders/OrderDetailPage";
 
 export default function AccountRouter() {
   return (

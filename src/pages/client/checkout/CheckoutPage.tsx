@@ -8,8 +8,10 @@ import CheckoutCartReview from "./components/CheckoutCartReview";
 import CheckoutAddress from "./components/CheckoutAddress";
 import CheckoutPayment from "./components/CheckoutPayment";
 import CheckoutSummary from "./components/CheckoutSummary";
-
+import addressApi from "@/api/addresses";
+import paymentApi from "@/api/payments";
 import checkoutService from "./checkout.service";
+import { unwrapList } from "@/utils/unwrap";
 import type {
   CheckoutInitState,
   CheckoutPaymentMethod,
@@ -17,15 +19,14 @@ import type {
 import vnpayApi from "@/api/vnpay";
 import { useAuthStore } from "@/store/authStore";
 import { useCartStore } from "@/store/cartStore";
-import { alertError, alertSuccess } from "@/utils/alert";
+import { alertError } from "@/utils/alert";
+import orderDetailService from "../orders/orderDetail.service";
 
 type StepKey = "REVIEW" | "ADDRESS" | "PAYMENT";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  console.log("CheckoutPage mounted", location.pathname);
 
   const user = useAuthStore((s) => s.user);
   const cart = useCartStore((s) => s.cart);
@@ -35,15 +36,24 @@ export default function CheckoutPage() {
 
   const init = location.state as CheckoutInitState | null;
 
+  const [mode, setMode] = useState<"CART" | "ORDER">("CART");
+
+  // CART mode
   const [cartId, setCartId] = useState("");
   const [itemIds, setItemIds] = useState<string[]>([]);
+
+  // ORDER mode
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [orderId, setOrderId] = useState("");
+
   const [addressId, setAddressId] = useState("");
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [paymentMethod, setPaymentMethod] =
     useState<CheckoutPaymentMethod>("COD");
   const [submitting, setSubmitting] = useState(false);
-  const [activeStep] = useState<StepKey>("REVIEW");
+  const [activeStep, setActiveStep] = useState<StepKey>("REVIEW");
 
-  // refs cho scroll
   const reviewRef = useRef<HTMLDivElement>(null);
   const addressRef = useRef<HTMLDivElement>(null);
   const paymentRef = useRef<HTMLDivElement>(null);
@@ -54,32 +64,110 @@ export default function CheckoutPage() {
   // INIT
   // =========================
   useEffect(() => {
-    // ❌ Không chạy INIT ở trang result
     if (isResult) return;
 
-    if (!init?.cart_id || !init?.item_ids?.length) {
+    if (!init) {
       alertError("Dữ liệu thanh toán không hợp lệ");
       navigate("/cart");
       return;
     }
 
-    setCartId(init.cart_id);
-    setItemIds(init.item_ids);
-    loadCart();
+    // ===== CART MODE (GIỮ NGUYÊN) =====
+    if ("cart_id" in init) {
+      setMode("CART");
+      setCartId(init.cart_id);
+      setItemIds(init.item_ids);
+      loadCart();
+      return;
+    }
+
+    // ===== ORDER MODE (MỚI) =====
+    if ("order_id" in init) {
+      setMode("ORDER");
+      setOrderId(init.order_id);
+
+      orderDetailService.getById(init.order_id).then((order) => {
+        if (!order) {
+          alertError("Không tìm thấy đơn hàng");
+          navigate("/orders");
+          return;
+        }
+
+        setOrderItems(
+          order.items.map((it) => ({
+            id: it.id,
+            quantity: it.quantity,
+            product: it.product,
+            subtotal: Number(it.price) * it.quantity,
+          }))
+        );
+      });
+    }
   }, [isResult]);
 
+  // reload cart nếu lệch
   useEffect(() => {
+    if (mode !== "CART") return;
     if (!cartId) return;
     if (!cart?.id || cart.id !== cartId) loadCart();
-  }, [cartId, cart?.id]);
+  }, [cartId, cart?.id, mode]);
+
+  // tự động tick chọn địa chỉ mặc định
+  useEffect(() => {
+    if (!user?.id || isResult) return;
+
+    let mounted = true;
+
+    (async () => {
+      try {
+        setLoadingAddresses(true);
+
+        const res = await addressApi.list({ pageSize: 100 });
+        const list = unwrapList(res);
+
+        if (!mounted) return;
+
+        setAddresses(list);
+
+        // ✅ AUTO-SELECT ĐÚNG THỜI ĐIỂM
+        if (!addressId && list.length) {
+          const defaults = list.filter((a) => a.is_default);
+
+          if (defaults.length >= 1) {
+            // ưu tiên default mới nhất
+            const chosen =
+              defaults.length === 1
+                ? defaults[0]
+                : defaults.sort(
+                    (a, b) =>
+                      new Date(b.created_at).getTime() -
+                      new Date(a.created_at).getTime()
+                  )[0];
+
+            setAddressId(chosen.id);
+          }
+        }
+      } catch (err) {
+        console.error("[CheckoutPage] load addresses failed", err);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id, isResult]); // ❗ KHÔNG phụ thuộc addressId
 
   // =========================
   // DERIVED
   // =========================
-  const selectedItems = useMemo(
-    () => itemsView.filter((it) => itemIds.includes(it.id)),
-    [itemsView, itemIds]
-  );
+  const selectedItems = useMemo(() => {
+    if (mode === "CART") {
+      return itemsView.filter((it) => itemIds.includes(it.id));
+    }
+    return orderItems;
+  }, [mode, itemsView, itemIds, orderItems]);
 
   const totalAmount = useMemo(
     () =>
@@ -102,7 +190,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!addressId) {
+    if (mode === "CART" && !addressId) {
       alertError("Vui lòng chọn địa chỉ giao hàng");
       return;
     }
@@ -110,7 +198,34 @@ export default function CheckoutPage() {
     try {
       setSubmitting(true);
 
-      // 1️⃣ CREATE ORDER (+ PAYMENT PENDING)
+      // =========================
+      // ORDER: PAY EXISTING ORDER
+      // =========================
+      if (mode === "ORDER") {
+        if (paymentMethod === "COD") {
+          await paymentApi.retryPayment(orderId, "COD");
+          navigate(`/checkout/result?success=1&code=COD&order_id=${orderId}`);
+          return;
+        }
+
+        if (paymentMethod === "VNPAY") {
+          const payment = await paymentApi.retryPayment(orderId, "VNPAY");
+
+          const vnpay = await vnpayApi.createPaymentUrl({
+            order_id: orderId,
+            payment_id: payment.id,
+          });
+
+          window.location.href = vnpay.paymentUrl;
+          return;
+        }
+
+        return;
+      }
+
+      // =========================
+      // CART: CREATE NEW ORDER
+      // =========================
       const order = await checkoutService.checkoutFromCart({
         cart_id: cartId,
         address_id: addressId,
@@ -118,25 +233,20 @@ export default function CheckoutPage() {
         payment_method: paymentMethod,
       });
 
-      // ======================
-      // COD FLOW
-      // ======================
+      if (!order) {
+        throw new Error("Không tạo được đơn hàng");
+      }
 
       if (paymentMethod === "COD") {
         navigate(`/checkout/result?success=1&code=COD&order_id=${order.id}`);
         return;
       }
 
-      // ======================
-      // VNPAY FLOW
-      // ======================
       if (paymentMethod === "VNPAY") {
-        // 2️⃣ CREATE VNPAY URL (DÙNG order_id)
         const vnpay = await vnpayApi.createPaymentUrl({
           order_id: order.id,
         });
 
-        // 3️⃣ REDIRECT USER
         window.location.href = vnpay.paymentUrl;
         return;
       }
@@ -161,10 +271,8 @@ export default function CheckoutPage() {
           display: "grid",
           gridTemplateColumns: "220px 1fr",
           gap: 3,
-          alignItems: "flex-start",
         }}
       >
-        {/* LEFT */}
         <CheckoutSteps
           active={activeStep}
           onGo={(s) => {
@@ -178,13 +286,12 @@ export default function CheckoutPage() {
           }}
         />
 
-        {/* RIGHT */}
         <Box>
           <Box ref={reviewRef} mb={4}>
             <CheckoutCartReview
               loading={loadingCart}
               items={selectedItems}
-              itemCount={itemIds.length}
+              itemCount={selectedItems.length}
               totalAmount={totalAmount}
               onBack={() => navigate("/cart")}
             />
@@ -194,6 +301,8 @@ export default function CheckoutPage() {
             <CheckoutAddress
               userId={user?.id || ""}
               value={addressId}
+              addresses={addresses}
+              loading={loadingAddresses}
               onChange={setAddressId}
             />
           </Box>

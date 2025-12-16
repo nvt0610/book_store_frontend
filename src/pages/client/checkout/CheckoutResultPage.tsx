@@ -60,7 +60,7 @@ export default function CheckoutResultPage() {
           {orderId && (
             <Button
               variant="contained"
-              onClick={() => navigate(`/account/orders/${orderId}`)}
+              onClick={() => navigate(`/orders/${orderId}`)}
             >
               Xem chi tiết đơn hàng
             </Button>

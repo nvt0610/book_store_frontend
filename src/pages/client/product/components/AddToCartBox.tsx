@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { cartApi } from "@/api/cart";
 import { cartItemApi } from "@/api/cartItem";
-import { orderApi } from "@/api/orders";
+import orderApi from "@/api/orders";
 import { useAuthStore } from "@/store/authStore";
 import { alertSuccess, alertError } from "@/utils/alert";
 import { useCartStore } from "@/store/cartStore";

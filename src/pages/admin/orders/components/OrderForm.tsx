@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { userApi } from "@/api/users";
 import { addressApi } from "@/api/addresses";
 import { productApi } from "@/api/products";
-import { orderApi } from "@/api/orders";
+import orderApi from "@/api/orders";
 
 import { alertError, alertSuccess } from "@/utils/alert";
 import { unwrapList } from "@/utils/unwrap";

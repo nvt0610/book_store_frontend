@@ -94,6 +94,12 @@ export interface BuyNowPayload {
   payment_method?: PaymentMethod;
 }
 
+export interface BuyAgainPayload {
+  source_order_id: string;
+  address_id: string;
+  payment_method?: PaymentMethod;
+}
+
 export type UpdatableOrderStatus = "PENDING" | "INACTIVE";
 
 export interface UpdateOrderPayload {
@@ -109,15 +115,14 @@ const base = createCrudApi("orders");
 // =====================================
 // orders API (CRUD + custom endpoints)
 // =====================================
-export const orderApi = {
+const orderApi = {
   ...base,
 
   /**
    * GET /orders/:id/items
    */
-  async listItems(orderId: string): Promise<{ items: OrderItem[] }> {
-    const res = await axiosClient.get(`/orders/${orderId}/items`);
-    return res.data;
+  async listItems(orderId: string) {
+    return axiosClient.get(`/orders/${orderId}/items`);
   },
 
   /**
@@ -125,7 +130,7 @@ export const orderApi = {
    */
   async createManual(payload: CreateManualOrderPayload): Promise<Order> {
     const res = await axiosClient.post(`/orders/manual`, payload);
-    return res.data;
+    return res.data.data;
   },
 
   /**
@@ -141,7 +146,15 @@ export const orderApi = {
    */
   async buyNow(payload: BuyNowPayload): Promise<Order> {
     const res = await axiosClient.post(`/orders/buy-now`, payload);
-    return res.data;
+    return res.data.data;
+  },
+
+  /**
+   * POST /orders/buy-again
+   */
+  async buyAgain(payload: BuyAgainPayload): Promise<Order> {
+    const res = await axiosClient.post(`/orders/buy-again`, payload);
+    return res.data.data;
   },
 
   /**
@@ -149,7 +162,7 @@ export const orderApi = {
    */
   async cancelOrder(id: string, reason?: string): Promise<Order> {
     const res = await axiosClient.post(`/orders/${id}/cancel`, { reason });
-    return res.data;
+    return res.data.data;
   },
 
   /**
@@ -158,7 +171,7 @@ export const orderApi = {
    */
   async updateOrder(id: string, data: UpdateOrderPayload): Promise<Order> {
     const res = await axiosClient.put(`/orders/${id}`, data);
-    return res.data;
+    return res.data.data;
   },
 };
 

@@ -10,9 +10,10 @@ import {
   Divider,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+import OrderItemsList from "./components/OrderItemsList";
 
-import orderDetailService from "../../../orders/orderDetail.service";
-import type { OrderDetail } from "../../../orders/orderDetail.types";
+import orderDetailService from "./orderDetail.service";
+import type { OrderDetail } from "./orderDetail.types";
 import { formatCurrency } from "@/utils/currency";
 
 export default function OrderDetailPage() {
@@ -59,9 +60,9 @@ export default function OrderDetailPage() {
         <Link
           underline="hover"
           sx={{ cursor: "pointer" }}
-          onClick={() => navigate("/account")}
+          onClick={() => navigate("/orders")}
         >
-          Tài khoản
+          Danh sách đơn hàng
         </Link>
         <Typography color="text.secondary">
           {loading ? "Đang tải..." : `Đơn hàng ${order?.id}`}

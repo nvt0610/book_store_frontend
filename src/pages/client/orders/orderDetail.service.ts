@@ -1,4 +1,4 @@
-import { orderApi } from "@/api/orders";
+import orderApi from "@/api/orders";
 import { productApi } from "@/api/products";
 import type { OrderDetail, OrderDetailItem } from "./orderDetail.types";
 
