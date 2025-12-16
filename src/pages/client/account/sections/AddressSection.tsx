@@ -8,16 +8,22 @@ import { unwrapList } from "@/utils/unwrap";
 
 import AddressCard from "../components/AddressCard";
 import AddressForm from "../components/AddressForm";
+import AddressDetailDialog from "../components/AddressDetailDialog";
 
 type FormState =
   | { mode: "closed" }
   | { mode: "create" }
-  | { mode: "edit"; data: Address };
+  | { mode: "edit"; data: Address }
+  | { mode: "view"; id: string }; // 👈
 
 export default function AddressSection() {
   const [loading, setLoading] = useState(true);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [formState, setFormState] = useState<FormState>({ mode: "closed" });
+
+  const handleView = (id: string) => {
+    setFormState({ mode: "view", id });
+  };
 
   // ======================
   // Load list
@@ -93,8 +99,8 @@ export default function AddressSection() {
         </Button>
       </Box>
 
-      {/* FORM */}
-      {formState.mode !== "closed" && (
+      {/* FORM (CREATE / EDIT) */}
+      {formState.mode !== "closed" && formState.mode !== "view" && (
         <AddressForm
           initialData={formState.mode === "edit" ? formState.data : null}
           onCancel={closeForm}
@@ -103,6 +109,14 @@ export default function AddressSection() {
             closeForm();
             loadAddresses();
           }}
+        />
+      )}
+
+      {/* VIEW DETAIL DIALOG */}
+      {formState.mode === "view" && (
+        <AddressDetailDialog
+          id={formState.id}
+          onClose={() => setFormState({ mode: "closed" })}
         />
       )}
 
@@ -120,6 +134,7 @@ export default function AddressSection() {
                 onEdit={() => setFormState({ mode: "edit", data: addr })}
                 onDelete={handleDelete}
                 onSetDefault={handleSetDefault}
+                onView={handleView}
               />
             </Grid>
           ))}

@@ -1,12 +1,5 @@
 // frontend/src/pages/client/account/components/AddressCard.tsx
-import {
-  Box,
-  Button,
-  Paper,
-  Typography,
-  Chip,
-  Divider,
-} from "@mui/material";
+import { Box, Button, Paper, Typography, Chip, Divider } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import StarIcon from "@mui/icons-material/Star";
@@ -16,15 +9,10 @@ export default function AddressCard({
   onEdit,
   onDelete,
   onSetDefault,
+  onView,
 }) {
-  const {
-    id,
-    full_name,
-    phone,
-    address_line,
-    address_line2,
-    is_default,
-  } = address;
+  const { id, full_name, phone, address_line, address_line2, is_default } =
+    address;
 
   return (
     <Paper
@@ -98,6 +86,9 @@ export default function AddressCard({
           color="inherit"
         >
           Sửa
+        </Button>
+        <Button size="small" onClick={() => onView(address.id)}>
+          Xem chi tiết
         </Button>
         <Button
           size="small"
